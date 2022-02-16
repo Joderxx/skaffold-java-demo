@@ -1,0 +1,69 @@
+# To learn more about the skaffold.yaml schema visit
+# https://skaffold.dev/docs/references/yaml/
+apiVersion: skaffold/v2beta19
+kind: Config
+build:
+  tagPolicy:
+    dateTime:
+      format: '20060102150405'
+  # defines where to find the code at build time and where to push the resulting image
+  artifacts:
+    - image: java-hello-world-1
+      context: ./hello1
+      jib:
+        args:
+        - -Dmaven.test.skip=true
+
+#    - image: java-hello-world-2
+#      context: ./hello2
+#      requires:
+#        - image: 'java-hello-world-1'
+#          alias: java-hello-world-1
+#      jib:
+#        args:
+#          - -Dmaven.test.skip=true
+
+
+# defines the Kubernetes manifests to deploy on each run
+deploy:
+#  kubectl:
+#    manifests:
+#    - ./kubernetes-manifests/**.yaml
+  helm:
+    releases:
+      - name: java-hello-world-1
+        chartPath: './hello1/helm-chart'
+        artifactOverrides:
+          image: java-hello-world-1
+        imageStrategy:
+          helm: {}
+#      - name: java-hello-world-2
+#        chartPath: './hello2/helm-chart'
+#        artifactOverrides:
+#          image: java-hello-world-2
+#        imageStrategy:
+#          helm: { }
+
+profiles:
+# use the dockerfile profile to build images using Docker instead of Jib
+- name: dockerfile
+  build:
+    tagPolicy:
+      dateTime:
+        format: '20060102150405'
+    # defines where to find the code at build time and where to push the resulting image
+    artifacts:
+      - image: java-hello-world-1
+        context: ./hello1
+        jib:
+          args:
+            - -Dmaven.test.skip=true
+
+#      - image: java-hello-world-2
+#        context: ./hello2
+#        #      requires:
+#        #        - image: 'java-hello-world-1'
+#        #          alias: java-hello-world-1
+#        jib:
+#          args:
+#            - -Dmaven.test.skip=true
